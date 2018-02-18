@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Cunava</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="menu_settings">Settings</string>
+    <string name="title_activity_login">LoginActivity</string>
+    <string name="title_activity_vote">VoteActivity</string>
+    <string name="title_activity_register">RegisterActivity</string>
+    <string name="title_activity_result">ResultActivity</string>
+    <string name="capture_successful">Capture Successful</string>
+    <string name="retake">Please retake your picture</string>
+    <string name="capture_error">Error in capture, please try again later!</string>
+    <string name="txt_h">Your vote has been casted successfully</string>
+    <string name="instruct_capture">Please take a proper portrait of yourself</string>
+    <string name="txt_w">Logout</string>
+
+
+    <string name="key">AIzaSyDMTUr6PNpB8Wg6zSeO0SEexDkb8WRlaoo</string>
+
+</resources>
