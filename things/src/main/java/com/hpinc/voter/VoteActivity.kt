@@ -14,9 +14,12 @@ import kotlinx.android.synthetic.main.activity_vote.*
 import android.graphics.BitmapFactory
 import android.graphics.Bitmap
 import android.graphics.Matrix
+import android.hardware.camera2.*
 import android.media.ImageReader
 import android.os.Handler
 import android.os.HandlerThread
+import android.speech.tts.TextToSpeech
+import android.speech.tts.UtteranceProgressListener
 import android.support.v4.app.ActivityCompat
 import android.util.Base64
 import android.widget.TextView
@@ -29,6 +32,7 @@ import org.json.JSONArray
 import java.io.ByteArrayOutputStream
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.collections.ArrayList
 
 
 class VoteActivity : Activity(), ImageReader.OnImageAvailableListener {
@@ -42,6 +46,7 @@ class VoteActivity : Activity(), ImageReader.OnImageAvailableListener {
     private var mImagePreprocessor: ImagePreprocessor? = null
     private var mCameraHandler: CameraHandler? = null
 
+    private var mTtsEngine: TextToSpeech? = null
 
     private var mBackgroundThread: HandlerThread? = null
     private var mBackgroundHandler: Handler? = null
@@ -50,6 +55,11 @@ class VoteActivity : Activity(), ImageReader.OnImageAvailableListener {
 
     private val mReady = AtomicBoolean(false)
     private val PERMISSION_REQUEST_CODE = 100
+
+    private val RANDOM = Random()
+
+    private val UTTERANCE_ID = "com.hpinc.voter.UTTERANCE_ID"
+
 
     val faceProperties: Array<String> = arrayOf("skin", "nose", "head", "girl", "eye", "mouth", "child", "ear", "face")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -226,6 +236,18 @@ class VoteActivity : Activity(), ImageReader.OnImageAvailableListener {
     private val mInitializeOnBackground = Runnable {
         mImagePreprocessor = ImagePreprocessor()
 
+        mTtsEngine = TextToSpeech(this@VoteActivity,
+                TextToSpeech.OnInitListener { status ->
+                    if (status == TextToSpeech.SUCCESS) {
+                        mTtsEngine.setLanguage(Locale.US)
+                        mTtsEngine.setOnUtteranceProgressListener(utteranceListener)
+                        mTtsEngine.speak("I'm ready!", TextToSpeech.QUEUE_ADD, null, UTTERANCE_ID)
+                    } else {
+                        Log.w("Error: ", "Could not open TTS Engine (onInit status=" + status
+                                + "). Ignoring text to speech")
+                        mTtsEngine = null
+                    }
+                })
 
         mCameraHandler = CameraHandler.getInstance() as CameraHandler
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
@@ -241,14 +263,27 @@ class VoteActivity : Activity(), ImageReader.OnImageAvailableListener {
                     PERMISSION_REQUEST_CODE)
         }
 
-
-
-
     }
 
     private val mBackgroundClickHandler = Runnable {
         mCameraHandler?.takePicture()
     }
+
+
+    private val utteranceListener = object : UtteranceProgressListener() {
+        override fun onStart(utteranceId: String) {
+            mReady.set(false)
+        }
+
+        override fun onDone(utteranceId: String) {
+            mReady.set(true)
+        }
+
+        override fun onError(utteranceId: String) {
+            mReady.set(true)
+        }
+    }
+
 
     override fun onImageAvailable(reader: ImageReader?) {
         lateinit var bitmap: Bitmap
@@ -280,6 +315,14 @@ class VoteActivity : Activity(), ImageReader.OnImageAvailableListener {
         }
     }
 
+
+    private fun <T> getRandomElement(list: List<T>): T {
+        return list[RANDOM.nextInt(list.size)]
+    }
+
+    fun speakShutterSound(tts: TextToSpeech) {
+
+    }
 
 }
 
